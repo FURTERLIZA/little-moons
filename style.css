@@ -105,9 +105,6 @@ body {
 .sidebar-panel {
   position: sticky;
   top: 2rem;
-  max-height: calc(100vh - 4rem);
-  overflow-y: auto;
-  padding-right: 2px;
 }
 
 @media (max-width: 960px) {
