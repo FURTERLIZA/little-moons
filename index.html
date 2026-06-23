@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>little moons</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="page-head">
+    <div>
+      <h1>little moons</h1>
+      <p class="subtitle">cosmic drone generator</p>
+    </div>
+    <div class="head-actions">
+      <button class="theme-btn" id="fullscreenBtn">[ fullscreen ]</button>
+      <button class="theme-btn" id="themeBtn">[ light ]</button>
+    </div>
+  </div>
+
+  <div class="layout">
+
+    <div class="main-col">
+      <div class="canvas-wrap" id="canvasWrap">
+        <canvas id="canvas"></canvas>
+        <button class="fs-exit-btn" id="fullscreenExit">[ exit ]</button>
+        <button class="fs-exit-btn fs-regen-btn" id="fullscreenRegen">[ regen ]</button>
+        <p class="start-hint" id="startHint">click to start</p>
+      </div>
+    </div>
+
+    <div class="sidebar-col">
+      <div class="sidebar-panel">
+
+        <div class="section is-open">
+          <button class="section-toggle" aria-expanded="true">
+            <span class="section-label">noise engine</span>
+            <span class="section-ind">−</span>
+          </button>
+          <div class="section-body">
+
+            <div class="toggle-row">
+              <label class="toggle">
+                <input type="checkbox" id="synthToggle" checked>
+                <span class="toggle-slider"></span>
+              </label>
+              <label class="toggle-label" for="synthToggle">browser synth</label>
+            </div>
+
+            <div id="synthParams">
+              <div class="field">
+                <label>waveform</label>
+                <div class="seg-row" id="waveformSeg">
+                  <button class="seg-btn active" data-value="random">rand</button>
+                  <button class="seg-btn" data-value="sawtooth">saw</button>
+                  <button class="seg-btn" data-value="triangle">tri</button>
+                  <button class="seg-btn" data-value="sine">sine</button>
+                  <button class="seg-btn" data-value="square">sq</button>
+                </div>
+              </div>
+              <div class="field">
+                <div class="field-head">
+                  <label for="filterModeSelect">filter cutoff</label>
+                  <span class="field-val" id="filterVal" style="display:none;">1100 hz</span>
+                </div>
+                <div class="select-wrap">
+                  <select id="filterModeSelect">
+                    <option value="dynamic">dynamic</option>
+                    <option value="static">static</option>
+                  </select>
+                </div>
+                <div id="filterStaticWrap" style="display:none; margin-top:0.5rem;">
+                  <input type="range" id="filterInput" min="200" max="3000" step="50" value="1100">
+                </div>
+              </div>
+              <div class="field">
+                <div class="field-head">
+                  <label for="lfoRateInput">lfo rate</label>
+                  <span class="field-val" id="lfoRateVal">0.30 hz</span>
+                </div>
+                <input type="range" id="lfoRateInput" min="0.02" max="2" step="0.02" value="0.3">
+              </div>
+              <div class="field">
+                <div class="field-head">
+                  <label for="detuneInput">detune spread</label>
+                  <span class="field-val" id="detuneVal">8 ¢</span>
+                </div>
+                <input type="range" id="detuneInput" min="0" max="30" step="1" value="8">
+              </div>
+              <div class="field">
+                <div class="field-head">
+                  <label for="reverbInput">reverb</label>
+                  <span class="field-val" id="reverbVal">0.28</span>
+                </div>
+                <input type="range" id="reverbInput" min="0" max="1" step="0.01" value="0.28">
+              </div>
+              <div class="field">
+                <div class="field-head">
+                  <label for="volumeInput">volume</label>
+                  <span class="field-val" id="volumeVal">0.70</span>
+                </div>
+                <input type="range" id="volumeInput" min="0" max="1" step="0.01" value="0.7">
+              </div>
+            </div>
+
+            <div class="field" style="margin-top:0.75rem;">
+              <label>rhythm</label>
+              <div class="seg-row" id="rhythmSeg">
+                <button class="seg-btn active" data-value="drone">drone</button>
+                <button class="seg-btn" data-value="pulse">pulse</button>
+                <button class="seg-btn" data-value="morse">morse</button>
+                <button class="seg-btn" data-value="random">rand</button>
+              </div>
+            </div>
+
+            <div class="section-divider"></div>
+
+            <div class="toggle-row">
+              <label class="toggle">
+                <input type="checkbox" id="midiToggle">
+                <span class="toggle-slider"></span>
+              </label>
+              <label class="toggle-label" for="midiToggle">midi</label>
+            </div>
+
+            <div id="midiDeviceWrap" style="margin-top: 0.75rem;">
+              <div class="field">
+                <label for="midiSelect">device</label>
+                <div class="select-wrap">
+                  <select id="midiSelect">
+                    <option value="">— initialising —</option>
+                  </select>
+                </div>
+              </div>
+              <p class="midi-caveat" id="midiCaveat"></p>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="section">
+          <button class="section-toggle" aria-expanded="false">
+            <span class="section-label">universal harmony</span>
+            <span class="section-ind">+</span>
+          </button>
+          <div class="section-body">
+
+            <div class="field-row">
+              <div class="field">
+                <label for="planetCountInput">planets</label>
+                <input type="number" id="planetCountInput" min="1" max="10" placeholder="random">
+              </div>
+              <div class="field">
+                <label for="moonCountInput">moons</label>
+                <input type="number" id="moonCountInput" min="1" max="5" placeholder="random">
+              </div>
+            </div>
+
+            <div class="field">
+              <div class="field-head">
+                <label for="gravityInput">gravity</label>
+                <span class="field-val" id="gravityVal">1.0</span>
+              </div>
+              <input type="range" id="gravityInput" min="0.1" max="3" step="0.1" value="1">
+            </div>
+
+            <div class="field">
+              <div class="field-head">
+                <label for="speedCapInput">moon speed cap</label>
+                <span class="field-val" id="speedCapVal">2.0</span>
+              </div>
+              <input type="range" id="speedCapInput" min="0.5" max="5" step="0.1" value="2">
+            </div>
+
+            <div class="field">
+              <div class="field-head">
+                <label for="influenceInput">influence radius</label>
+                <span class="field-val" id="influenceVal">4.0</span>
+              </div>
+              <input type="range" id="influenceInput" min="1" max="8" step="0.5" value="4">
+            </div>
+
+            <div class="field-row">
+              <div class="field">
+                <label for="rootSelect">root</label>
+                <div class="select-wrap">
+                  <select id="rootSelect"></select>
+                </div>
+              </div>
+              <div class="field">
+                <label for="scaleSelect">scale</label>
+                <div class="select-wrap">
+                  <select id="scaleSelect"></select>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      <button class="primary-btn" id="regenBtn">regenerate</button>
+
+        <div class="section">
+          <div class="section-label" style="margin-bottom: 1rem;">about</div>
+          <p class="about-copy">planets are fixed gravity wells — each tied to a note. little moons drift between them pulled by gravity. the closer a moon gets to a planet, the louder that note sounds.</p>
+          <p class="about-copy">output is live — browser synth or midi (one channel per moon, CC#11 expression riding the volume in real time). start it and leave it on.</p>
+          <div class="about-links">
+            <a href="https://www.youtube.com/@FURTERLIZA" target="_blank" rel="noopener" class="ui-link">youtube</a>
+            <a href="https://bsky.app/profile/furterliza.bsky.social" target="_blank" rel="noopener" class="ui-link">bluesky</a>
+            <a href="https://github.com/FURTERLIZA" target="_blank" rel="noopener" class="ui-link">github</a>
+          </div>
+          <button class="privacy-link" id="privacyBtn">privacy</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="modal-overlay" id="privacyModal" aria-hidden="true">
+    <div class="modal-card" role="dialog" aria-labelledby="privacyTitle">
+      <div class="modal-head">
+        <span class="modal-title" id="privacyTitle">privacy</span>
+        <button class="modal-close" id="privacyClose" aria-label="close">×</button>
+      </div>
+      <p class="modal-body">little moons runs entirely in your browser. your audio is never uploaded — all processing happens locally on your device. no data is collected.</p>
+      <p class="modal-body">released under the <a href="https://github.com/FURTERLIZA/little-moons/blob/main/LICENSE" target="_blank" rel="noopener" class="ui-link">MIT licence</a>. free to use, modify, and distribute.</p>
+      <p class="modal-copy">© Fürter Liza · <a href="https://bsky.app/profile/furterliza.bsky.social" target="_blank" rel="noopener" class="ui-link">@furterliza.bsky.social</a></p>
+    </div>
+  </div>
+
+  <script type="module" src="src/main.js"></script>
+  <script>
+    const modal = document.getElementById('privacyModal');
+    document.getElementById('privacyBtn').addEventListener('click', () => {
+      modal.classList.add('is-open');
+      modal.setAttribute('aria-hidden', 'false');
+    });
+    function closeModal() {
+      modal.classList.remove('is-open');
+      modal.setAttribute('aria-hidden', 'true');
+    }
+    document.getElementById('privacyClose').addEventListener('click', closeModal);
+    modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+  </script>
+</body>
+</html>
