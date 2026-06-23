@@ -167,7 +167,7 @@ function initScene(config, seed) {
       note: entry.midi,
       scaleIndex: entry.scaleIndex,
       scaleLength: entry.scaleLength,
-      hasRing: Math.random() < 0.1,
+      hasRing: Math.random() < (1 / 15),
     });
   }
 

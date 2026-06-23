@@ -127,9 +127,9 @@ export function render(ctx, canvas, planets, moons, config) {
     const ringOuter = pr * 2.1;
     const drawRing = () => {
       const rg = ctx.createRadialGradient(0, 0, ringInner, 0, 0, ringOuter);
-      rg.addColorStop(0,    'rgba(0, 0, 0, 0.92)');
-      rg.addColorStop(0.55, 'rgba(0, 0, 0, 0.88)');
-      rg.addColorStop(0.82, 'rgba(0, 0, 0, 0.5)');
+      rg.addColorStop(0,    'rgba(0, 0, 0, 0.55)');
+      rg.addColorStop(0.55, 'rgba(0, 0, 0, 0.5)');
+      rg.addColorStop(0.82, 'rgba(0, 0, 0, 0.28)');
       rg.addColorStop(1,    'rgba(0, 0, 0, 0)');
       ctx.beginPath();
       ctx.arc(0, 0, ringOuter, 0, Math.PI * 2, false);
