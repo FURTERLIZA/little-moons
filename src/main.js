@@ -141,6 +141,61 @@ function initScene(config, seed) {
   const boundsX = config.boundsX ?? config.bounds;
   const boundsY = config.boundsY ?? config.bounds;
 
+  function generateBody() {
+    const style      = Math.random() < 0.35 ? 'banded' : 'smooth';
+    const lightAngle = Math.random() * Math.PI * 2;
+    const lightDist  = 0.2 + Math.random() * 0.25;
+    const sat0  = 55 + Math.floor(Math.random() * 25);
+    const sat1  = 60 + Math.floor(Math.random() * 20);
+    const sat2  = 55 + Math.floor(Math.random() * 20);
+    const lit0  = 60 + Math.floor(Math.random() * 20);
+    const lit1  = 50 + Math.floor(Math.random() * 15);
+    const lit2  = 22 + Math.floor(Math.random() * 20);
+    const mid   = 0.25 + Math.random() * 0.3;
+    const hueShift2 = (Math.random() - 0.5) * 25;
+
+    const bands = [];
+    if (style === 'banded') {
+      let y = -1.0;
+      while (y < 1.1) {
+        const h = 0.07 + Math.random() * 0.22;
+        bands.push({
+          y:        y + h / 2,
+          h:        h / 2,
+          hueShift: (Math.random() - 0.5) * 50,
+          sat:      50 + Math.random() * 35,
+          lit:      25 + Math.random() * 45,
+          alpha:    0.25 + Math.random() * 0.45,
+          freq:     (1.0 + Math.random() * 3.0) * Math.PI * 2,
+          amp:      0.04 + Math.random() * 0.14,
+          phase:    Math.random() * Math.PI * 2,
+        });
+        y += h;
+      }
+    }
+
+    return { style, lightAngle, lightDist, sat0, sat1, sat2, lit0, lit1, lit2, mid, hueShift2, bands };
+  }
+
+  function generateDust() {
+    const count = 5 + Math.floor(Math.random() * 4);
+    const blobs = [];
+    for (let i = 0; i < count; i++) {
+      blobs.push({
+        a:  Math.random() * Math.PI * 2,
+        d:  0.4 + Math.random() * 0.7,
+        r:  2.2 + Math.random() * 1.8,
+        op: 0.007 + Math.random() * 0.008,
+      });
+    }
+    return {
+      blobs,
+      hueShift:   (Math.random() - 0.5) * 30,
+      haloRadius: 3.0 + Math.random() * 1.2,
+      haloOp:     0.008 + Math.random() * 0.008,
+    };
+  }
+
   const planetCount = config.planetCount ?? (5 + Math.floor(rng() * 4));
   const planets = [];
   const minSep  = 5;
@@ -168,6 +223,8 @@ function initScene(config, seed) {
       scaleIndex: entry.scaleIndex,
       scaleLength: entry.scaleLength,
       hasRing: Math.random() < (1 / 15),
+      dust: generateDust(),
+      body: generateBody(),
     });
   }
 

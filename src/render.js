@@ -90,36 +90,37 @@ export function render(ctx, canvas, planets, moons, config) {
     const pr    = planet.size * scale;
     const px    = wx(planet.x);
     const py    = wy(planet.y);
-    const glowR = pr * 2.8;
+    // 1. Dust cloud — unique layout stored per planet
+    const dust = planet.dust;
+    const dustHue = hue + dust.hueShift;
 
-    // Net moon pull for glow elongation
-    let netX = 0, netY = 0;
-    for (const moon of moons) {
-      const { dx, dy } = toroidalOffset(planet.x, planet.y, moon.x, moon.y, boundsX, boundsY);
-      const d = Math.sqrt(dx * dx + dy * dy);
-      if (d < 0.001) continue;
-      const influence = planet.size * config.audibleRadiusMultiplier;
-      if (d >= influence) continue;
-      const t = Math.pow(1 - d / influence, 1.5);
-      netX += (dx / d) * t;
-      netY += (dy / d) * t;
-    }
-
-    // 1. Elliptical glow
     ctx.save();
     ctx.translate(px, py);
-    const netMag = Math.sqrt(netX * netX + netY * netY);
-    if (netMag > 0.001) {
-      ctx.rotate(Math.atan2(netY, netX));
-      ctx.scale(1 + Math.min(netMag * 0.12, 0.18), 1);
-    }
-    const glow = ctx.createRadialGradient(0, 0, 0, 0, 0, glowR);
-    glow.addColorStop(0, `hsla(${hue}, 80%, 65%, 0.2)`);
-    glow.addColorStop(1, `hsla(${hue}, 80%, 65%, 0)`);
+
+    // Soft base halo
+    const halo = ctx.createRadialGradient(0, 0, pr * 0.6, 0, 0, pr * dust.haloRadius);
+    halo.addColorStop(0,   `hsla(${dustHue}, 75%, 65%, ${dust.haloOp})`);
+    halo.addColorStop(0.5, `hsla(${dustHue}, 70%, 60%, ${(dust.haloOp * 0.5).toFixed(4)})`);
+    halo.addColorStop(1,   `hsla(${dustHue}, 70%, 60%, 0)`);
     ctx.beginPath();
-    ctx.arc(0, 0, glowR, 0, Math.PI * 2);
-    ctx.fillStyle = glow;
+    ctx.arc(0, 0, pr * dust.haloRadius, 0, Math.PI * 2);
+    ctx.fillStyle = halo;
     ctx.fill();
+
+    // Offset blobs
+    for (const b of dust.blobs) {
+      const ox = Math.cos(b.a) * b.d * pr;
+      const oy = Math.sin(b.a) * b.d * pr;
+      const br = b.r * pr;
+      const blob = ctx.createRadialGradient(ox, oy, 0, ox, oy, br);
+      blob.addColorStop(0, `hsla(${dustHue}, 70%, 65%, ${b.op})`);
+      blob.addColorStop(1, `hsla(${dustHue}, 70%, 65%, 0)`);
+      ctx.beginPath();
+      ctx.arc(ox, oy, br, 0, Math.PI * 2);
+      ctx.fillStyle = blob;
+      ctx.fill();
+    }
+
     ctx.restore();
 
     // Ring helper — draws a dark flat annulus at origin in current transform
@@ -151,13 +152,13 @@ export function render(ctx, canvas, planets, moons, config) {
     }
 
     // 3. Planet body
-    const lit = ctx.createRadialGradient(
-      px - pr * 0.3, py - pr * 0.3, pr * 0.01,
-      px + pr * 0.1, py + pr * 0.1, pr
-    );
-    lit.addColorStop(0,    `hsl(${hue}, 68%, 55%)`);
-    lit.addColorStop(0.4,  `hsl(${hue}, 76%, 56%)`);
-    lit.addColorStop(1,    `hsl(${hue}, 70%, 32%)`);
+    const b = planet.body;
+    const lx = px + Math.cos(b.lightAngle) * pr * b.lightDist;
+    const ly = py + Math.sin(b.lightAngle) * pr * b.lightDist;
+    const lit = ctx.createRadialGradient(lx, ly, pr * 0.01, px, py, pr);
+    lit.addColorStop(0,     `hsl(${hue}, ${b.sat0}%, ${b.lit0}%)`);
+    lit.addColorStop(b.mid, `hsl(${hue}, ${b.sat1}%, ${b.lit1}%)`);
+    lit.addColorStop(1,     `hsl(${hue + b.hueShift2}, ${b.sat2}%, ${b.lit2}%)`);
     ctx.beginPath();
     ctx.arc(px, py, pr, 0, Math.PI * 2);
     ctx.fillStyle = lit;
