@@ -109,6 +109,12 @@ function resizeCanvas() {
   }
 }
 
+function activeBoundsX() {
+  return document.body.classList.contains('is-fullscreen')
+    ? DEFAULT_CONFIG.bounds * (canvas.width / canvas.height)
+    : DEFAULT_CONFIG.bounds;
+}
+
 function setFullscreen(on) {
   document.body.classList.toggle('is-fullscreen', on);
   resizeCanvas();
@@ -185,14 +191,14 @@ function initScene(config, seed) {
         a:  Math.random() * Math.PI * 2,
         d:  0.4 + Math.random() * 0.7,
         r:  2.2 + Math.random() * 1.8,
-        op: 0.007 + Math.random() * 0.008,
+        op: 0.016 + Math.random() * 0.016,
       });
     }
     return {
       blobs,
       hueShift:   (Math.random() - 0.5) * 30,
       haloRadius: 3.0 + Math.random() * 1.2,
-      haloOp:     0.008 + Math.random() * 0.008,
+      haloOp:     0.018 + Math.random() * 0.016,
     };
   }
 
@@ -394,6 +400,7 @@ function buildControls() {
     const rawMoons   = parseInt(document.getElementById('moonCountInput').value);
     startScene({
       ...DEFAULT_CONFIG,
+      boundsX:                activeBoundsX(),
       planetCount:            Number.isNaN(rawPlanets) ? null : Math.max(1, Math.min(10, rawPlanets)),
       moonCount:              Number.isNaN(rawMoons)   ? null : Math.max(1, Math.min(5, rawMoons)),
       gravityConstant:        parseFloat(gravityInput.value),
@@ -483,10 +490,83 @@ function buildControls() {
     updateBackends();
   });
 
+  // ── Randomise all settings ────────────────────────────────────────────
+  function randomiseAll() {
+    synthVoice.resume();
+
+    // Waveform
+    const waveforms = ['random', 'sawtooth', 'triangle', 'sine', 'square'];
+    const wf = waveforms[Math.floor(Math.random() * waveforms.length)];
+    document.querySelectorAll('#waveformSeg .seg-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.value === wf);
+    });
+    synthVoice.setWaveformMode(wf);
+
+    // Rhythm
+    const rhythms = ['drone', 'pulse', 'morse', 'random'];
+    const rh = rhythms[Math.floor(Math.random() * rhythms.length)];
+    document.querySelectorAll('#rhythmSeg .seg-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.value === rh);
+    });
+    rhythmMode = rh;
+    refreshMoonRhythms();
+
+    // Filter — dispatch triggers the bindRange display update
+    const fm = Math.random() < 0.5 ? 'dynamic' : 'static';
+    filterModeSelect.value = fm;
+    if (fm === 'static') {
+      filterInput.value = Math.round(300 + Math.random() * 2500);
+      filterInput.dispatchEvent(new Event('input'));
+    }
+    applyFilterMode(fm);
+
+    // Synth range params
+    lfoRateInput.value = (0.02 + Math.random() * 1.98).toFixed(2);
+    lfoRateInput.dispatchEvent(new Event('input'));
+    detuneInput.value  = Math.floor(Math.random() * 31);
+    detuneInput.dispatchEvent(new Event('input'));
+    reverbInput.value  = (Math.random() * 0.75).toFixed(2);
+    reverbInput.dispatchEvent(new Event('input'));
+    volumeInput.value  = (0.4 + Math.random() * 0.55).toFixed(2);
+    volumeInput.dispatchEvent(new Event('input'));
+
+    // Physics range params
+    gravityInput.value  = (0.3 + Math.random() * 2.2).toFixed(1);
+    gravityInput.dispatchEvent(new Event('input'));
+    speedCapInput.value = (0.5 + Math.random() * 4.5).toFixed(1);
+    speedCapInput.dispatchEvent(new Event('input'));
+    influenceInput.value = (2 + Math.random() * 5).toFixed(1);
+    influenceInput.dispatchEvent(new Event('input'));
+
+    // Root & scale
+    rootSelect.selectedIndex  = Math.floor(Math.random() * rootSelect.options.length);
+    scaleSelect.selectedIndex = Math.floor(Math.random() * scaleSelect.options.length);
+
+    // Planet/moon counts — blank so both are fully random
+    document.getElementById('planetCountInput').value = '';
+    document.getElementById('moonCountInput').value   = '';
+
+    // Regenerate scene with new physics settings
+    startScene({
+      ...DEFAULT_CONFIG,
+      boundsX:                 activeBoundsX(),
+      planetCount:             null,
+      moonCount:               null,
+      gravityConstant:         parseFloat(gravityInput.value),
+      maxMoonSpeed:            parseFloat(speedCapInput.value),
+      audibleRadiusMultiplier: parseFloat(influenceInput.value),
+      scaleRoot:               rootSelect.value,
+      scaleType:               scaleSelect.value,
+    }, (Math.random() * 0xFFFFFFFF) >>> 0);
+  }
+
+  document.getElementById('randBtn').addEventListener('click', randomiseAll);
+
   // ── Fullscreen ────────────────────────────────────────────────────────
   document.getElementById('fullscreenBtn').addEventListener('click',  () => setFullscreen(true));
   document.getElementById('fullscreenExit').addEventListener('click', () => setFullscreen(false));
   document.getElementById('fullscreenRegen').addEventListener('click', () => document.getElementById('regenBtn').click());
+  document.getElementById('fullscreenRand').addEventListener('click',  randomiseAll);
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape' && document.body.classList.contains('is-fullscreen')) setFullscreen(false);
   });
