@@ -6,6 +6,8 @@ planets are fixed gravity wells, each tied to a note from a chosen scale. little
 drift between them pulled by gravity. the closer a moon gets to a planet, the louder
 that note sounds. output is browser synth, MIDI, or both at once. start it and leave it on.
 
+**[play in browser →](https://furterliza.github.io/little-moons/)**
+
 ---
 
 ## requirements
