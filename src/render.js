@@ -164,6 +164,33 @@ export function render(ctx, canvas, planets, moons, config) {
     ctx.fillStyle = lit;
     ctx.fill();
 
+    // 3b. Bands overlay (banded / Jupiter-style planets)
+    if (b.style === 'banded' && b.bands.length > 0) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(px, py, pr, 0, Math.PI * 2);
+      ctx.clip();
+      const steps = 80;
+      for (const band of b.bands) {
+        ctx.beginPath();
+        for (let i = 0; i <= steps; i++) {
+          const xn  = (i / steps) * 2 - 1;
+          const top = py + (band.y - band.h + band.amp * Math.sin(band.freq * xn + band.phase)) * pr;
+          if (i === 0) ctx.moveTo(px + xn * pr, top);
+          else         ctx.lineTo(px + xn * pr, top);
+        }
+        for (let i = steps; i >= 0; i--) {
+          const xn  = (i / steps) * 2 - 1;
+          const bot = py + (band.y + band.h + band.amp * Math.sin(band.freq * xn + band.phase + 1.2)) * pr;
+          ctx.lineTo(px + xn * pr, bot);
+        }
+        ctx.closePath();
+        ctx.fillStyle = `hsla(${hue + band.hueShift}, ${band.sat}%, ${band.lit}%, ${band.alpha})`;
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+
     // 4. Ring front half — clipped to lower screen, drawn over planet
     if (planet.hasRing) {
       ctx.save();
